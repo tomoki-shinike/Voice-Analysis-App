@@ -8,7 +8,7 @@ import soundfile as sf
 from audio_recorder_streamlit import audio_recorder
 
 st.set_page_config(page_title="音声分析アプリ", layout="wide")
-st.title("🗣️ 録音＆音声分析アプリ（Whisper対応）")
+st.title("🗣️ 音声分析アプリ")
 
 # ===== 共通関数 =====
 
@@ -59,15 +59,15 @@ def generate_feedback(feat):
 
 # ================= 録音＆Whisper解析 =================
 
-st.header("🎤 マイク録音＆文字起こし（改善版UI）")
-st.markdown("##### 🎙 録音開始ボタンを押して話してください")
+st.header("🎤 録音＆文字起こし")
+st.markdown("##### 🎙 マイクを押すと録音開始します")
 
 wav_audio = audio_recorder(pause_threshold=8.0, sample_rate=16000)
 
 if wav_audio is None:
-    st.info("🟢 マイク待機中... 録音を開始してください")
+    st.info("🟢 待機中…マイクのイラストを押してください")
 else:
-    st.success("🔴 録音完了！以下から再生・保存・分析できます")
+    st.success("🔴 録音完了！再生・保存・分析できます")
 
 if wav_audio:
     st.audio(wav_audio, format="audio/wav")
@@ -278,7 +278,7 @@ if file_a and file_b:
 """)
 
 # ===== 区間分析セクション =====
-st.header("✂️ 録音の一部を15秒間の範囲で分析")
+st.header("✂️ 範囲を指定して分析")
 
 def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean):
     feedback = []
@@ -323,7 +323,7 @@ if wav_audio:
         if st.button("🔍 この15秒区間を分析する"):
             feat = analyze_features(y_seg, sr_full)
 
-            st.subheader("📊 区間の音響指標（15秒間）")
+            st.subheader("📊 区間の指標（15秒間）")
             col1, col2, col3 = st.columns(3)
             col1.metric("🔊 平均音量", f"{feat['rms_mean']:.4f}")
             col2.metric("🎵 平均ピッチ", f"{feat['pitch_mean']:.2f}Hz")
