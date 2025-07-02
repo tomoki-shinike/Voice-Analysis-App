@@ -8,7 +8,7 @@ import soundfile as sf
 from audio_recorder_streamlit import audio_recorder
 
 st.set_page_config(page_title="－音声分析アプリ－", layout="wide")
-st.markdown("# 🗣️ 音声分析アプリ") 
+st.markdown("# 🗣️ 音声分析用のWEBアプリ") 
 
 # ===== 共通関数 =====
 
@@ -339,7 +339,7 @@ if wav_audio is not None and len(wav_audio) > 0:
             ax[0].set_ylabel("RMS")
             ax[1].plot(t_pitch[: len(feat["pitch"])], feat["pitch"], color="green")
             ax[1].set_ylabel("Pitch (Hz)")
-            ax[1].set_xlabel("Time（s）")
+            ax[1].set_xlabel("Time(s)")
             st.pyplot(fig)
 
             st.subheader("🧪 拡張音響指標")
