@@ -7,7 +7,7 @@ import tempfile
 import soundfile as sf
 from audio_recorder_streamlit import audio_recorder
 
-st.set_page_config(page_title="音声分析アプリ", layout="wide")
+st.set_page_config(page_title="－音声分析－", layout="wide")
 st.title("🗣️ 音声分析アプリ")
 
 # ===== 共通関数 =====
