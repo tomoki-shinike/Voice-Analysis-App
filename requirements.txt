@@ -1,4 +1,4 @@
-streamlit>=1.33.0
+streamlit
 librosa
 numpy
 matplotlib
@@ -8,4 +8,3 @@ whisper
 audio-recorder-streamlit
 torch
 typing_extensions
-pydub
