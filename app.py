@@ -93,7 +93,7 @@ if wav_audio:
         fig_rec, ax = plt.subplots(2, 1, figsize=(10, 5), sharex=True)
         ax[0].plot(librosa.times_like(feat_rec["rms"], sr=sr_rec), feat_rec["rms"], color="blue")
         ax[1].plot(librosa.times_like(feat_rec["pitch"], sr=sr_rec), feat_rec["pitch"], color="green")
-        ax[1].set_xlabel("Time（s）")
+        ax[1].set_xlabel("Time(s)")
         st.pyplot(fig_rec)
 
     if st.button("🔍 Whisper文字起こしを実行する"):
