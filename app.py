@@ -57,22 +57,30 @@ def generate_feedback(feat):
 
     return " ".join(fb)
 
-# ================= 録音＆Whisper解析 =================
+# ================= 録音＆Whisper解析（ステータス付き） =================
 
 st.header("🎤 録音＆文字起こし")
-st.markdown("##### 🎙 マイクを押すと録音開始します")
+st.markdown("##### 🎙 マイクのボタンを押して録音を開始してください")
 
-wav_audio = audio_recorder(pause_threshold=8.0, sample_rate=16000)
+# 状態領域の初期化
+status = st.empty()
+record_area = st.empty()
 
-if wav_audio is None:
-    st.info("🟢 待機中…マイクのイラストを押してください")
+# 録音開始のトリガー
+if st.button("🎙 録音開始"):
+    status.info("🔴 録音中…話しかけてください")
+    wav_audio = audio_recorder(pause_threshold=8.0, sample_rate=16000)
 else:
-    st.success("🔴 録音完了！再生・保存・分析できます")
+    wav_audio = None
+    status.info("🟢 待機中…マイクのボタンを押してください")
 
+# 録音が完了したら表示切り替え
 if wav_audio:
-    st.audio(wav_audio, format="audio/wav")
-    st.download_button("⬇️ ここから録音を保存できます", wav_audio, file_name="recorded.wav")
+    status.success("✅ 録音完了！再生・保存・分析できます")
+    record_area.audio(wav_audio, format="audio/wav")
+    record_area.download_button("⬇️ ここから録音を保存できます", wav_audio, file_name="recorded.wav")
 
+    # 音響分析ボタン
     if st.button("📊 録音音声を音響的に分析する"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
             tmp_audio.write(wav_audio)
@@ -96,6 +104,7 @@ if wav_audio:
         ax[1].set_xlabel("Time（s）")
         st.pyplot(fig_rec)
 
+    # Whisper文字起こしボタン
     if st.button("🔍 Whisper文字起こしを実行する"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
             tmp.write(wav_audio)
@@ -155,6 +164,7 @@ if wav_audio:
             })
 
         st.dataframe(seg_data, use_container_width=True)
+
 
 # ========== 単体音声ファイルの分析 ==========
 st.header("📂 アップロード音声の分析")
