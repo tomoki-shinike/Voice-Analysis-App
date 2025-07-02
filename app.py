@@ -12,12 +12,11 @@ st.title("🗣️ 録音＆音声分析アプリ（Whisper対応）")
 
 # ===== 共通関数 =====
 
-# 🔄 アップロードファイルを WAV として保存（pydub不要）
 def convert_to_wav(uploaded_file):
     tmp_path = tempfile.NamedTemporaryFile(delete=False, suffix=".wav").name
     with open(tmp_path, "wb") as f:
         f.write(uploaded_file.read())
-    return tmp_path  # pydubではなく単純保存
+    return tmp_path
 
 def analyze_features(y, sr):
     duration = librosa.get_duration(y=y, sr=sr)
@@ -43,16 +42,19 @@ def generate_feedback(feat):
         fb.append("十分な声量があり、力強い発話です。")
     else:
         fb.append("適度な音量で話せています。")
+
     if feat["pitch_mean"] < 110:
         fb.append("やや低めの声です。")
     elif feat["pitch_mean"] > 250:
         fb.append("比較的高めの声です。")
     else:
         fb.append("安定した音程です。")
+
     if feat["clarity_mean"] < 0.2:
         fb.append("発話が明瞭で聞き取りやすいです。")
     elif feat["clarity_mean"] > 0.4:
         fb.append("ややこもった音に聞こえる可能性があります。")
+
     return " ".join(fb)
 
 # ================= 録音＆Whisper解析 =================
@@ -101,7 +103,7 @@ if wav_audio:
             y, sr = librosa.load(tmp.name, sr=None)
 
         with st.spinner("Whisperで文字起こし中..."):
-            model = whisper.load_model("small")  # Cloud向けに軽量モデル推奨
+            model = whisper.load_model("small")
             result = model.transcribe(tmp.name, language="ja")
 
         st.subheader("📝 Whisper文字起こし")
@@ -154,8 +156,6 @@ if wav_audio:
 
         st.dataframe(seg_data, use_container_width=True)
 
-
-
 # ========== 単体音声ファイルの分析 ==========
 st.header("📂 アップロード音声の分析")
 
@@ -180,7 +180,6 @@ if uploaded_file:
     ax[1].plot(librosa.times_like(feat["pitch"], sr=sr), feat["pitch"], color="green")
     ax[1].set_xlabel("時間（秒）")
     st.pyplot(fig)
-
 
 # ========== 音声A/B 比較分析 ==========
 st.header("📂 音声AとBの比較分析")
@@ -283,25 +282,19 @@ st.header("✂️ 録音の一部を15秒間の範囲で分析")
 
 def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean):
     feedback = []
-
     if f1 and f2:
         if f1 > 800 or f2 < 1000:
             feedback.append("母音の明瞭度が低く、発音がこもっている可能性があります。")
-
     if centroid_mean < 1200:
         feedback.append("音声全体がこもった印象を与えるスペクトル分布です。")
     elif centroid_mean > 2500:
         feedback.append("明瞭で鋭い印象の音声特性が見られます。")
-
     if bandwidth_mean < 300:
         feedback.append("周波数の広がりが狭く、やや単調な音質です。")
-
     if slope < -10:
         feedback.append("高域の減衰が強く、声の抜けが弱く感じられる可能性があります。")
-
     if flatness_mean > 0.85:
         feedback.append("ハーモニック成分が少なく、ノイズ的な傾向が強いです。")
-
     return "📝 音響フィードバック:\n" + "\n".join(f"- {line}" for line in feedback) if feedback else "音響指標に大きな異常は見られません。"
 
 if wav_audio:
@@ -329,6 +322,7 @@ if wav_audio:
 
         if st.button("🔍 この15秒区間を分析する"):
             feat = analyze_features(y_seg, sr_full)
+
             st.subheader("📊 区間の音響指標（15秒間）")
             col1, col2, col3 = st.columns(3)
             col1.metric("🔊 平均音量", f"{feat['rms_mean']:.4f}")
@@ -379,16 +373,11 @@ if wav_audio:
             mean_spectrum = np.mean(S_db, axis=1)
             slope = np.polyfit(freqs_db, mean_spectrum, deg=1)[0]
 
-            st.markdown(f"- **フォルマント周波数**：F1 = {f1} Hz, F2 = {f2} Hz  \n"
-                        f"  - 母音の音色を示す周波数成分。例：/a/ → F1≈700Hz, /i/ → F2≈2200Hz")
-            st.markdown(f"- **スペクトル中心周波数**：{centroid_mean:.2f} Hz  \n"
-                        f"  - 音の「明るさ」や重心。1500〜2500Hzが明瞭音声の目安")
-            st.markdown(f"- **スペクトル帯域幅**：{bandwidth_mean:.2f} Hz  \n"
-                        f"  - 周波数分布の広がり。500Hz以上で豊か、300Hz以下でこもりがち")
-            st.markdown(f"- **スペクトル傾斜**：{slope:.2f} dB/oct  \n"
-                        f"  - 高域の減衰具合。有声音で -6〜-8dB/oct 程度が自然")
-            st.markdown(f"- **スペクトル平坦度**：{flatness_mean:.3f}  \n"
-                        f"  - ハーモニック性の指標。0.2〜0.4：声らしい、0.8〜1.0：ノイズ的")
+            st.markdown(f"- **フォルマント周波数**：F1 = {f1} Hz, F2 = {f2} Hz")
+            st.markdown(f"- **スペクトル中心周波数**：{centroid_mean:.2f} Hz")
+            st.markdown(f"- **スペクトル帯域幅**：{bandwidth_mean:.2f} Hz")
+            st.markdown(f"- **スペクトル傾斜**：{slope:.2f} dB/oct")
+            st.markdown(f"- **スペクトル平坦度**：{flatness_mean:.3f}")
 
             st.markdown("#### 🗒 自然言語による音響フィードバック")
             st.info(generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean))
@@ -405,10 +394,6 @@ if wav_audio:
                 fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
                 ax.plot(angles, mean_vals, color="blue", linewidth=2, label="Mean")
                 ax.fill(angles, mean_vals, color="blue", alpha=0.25)
-                ax.plot(angles, std_vals, color="orange", linewidth=2)
-
-
-# MFCCレーダーチャート（続き）
                 ax.plot(angles, std_vals, color="orange", linewidth=2, label="Variation")
                 ax.fill(angles, std_vals, color="orange", alpha=0.25)
                 ax.set_thetagrids(np.degrees(angles[:-1]), labels)
@@ -419,12 +404,10 @@ if wav_audio:
 
             mfcc_mean_norm = (mfcc_mean - np.min(mfcc_mean)) / (np.max(mfcc_mean) - np.min(mfcc_mean) + 1e-6)
             mfcc_std_norm = (mfcc_std - np.min(mfcc_std)) / (np.max(mfcc_std) - np.min(mfcc_std) + 1e-6)
-
             plot_combined_radar(mfcc_mean_norm.tolist(), mfcc_std_norm.tolist())
 
-            # 日本語による補足解説
             st.markdown("""
-**🧾 MFCCラベルの説明**
+**🧾 MFCCラベルの説明：**
 
 - **MFCC1〜13** は音声スペクトルの形状を要約した特徴量です  
 - **MFCC Mean** は平均的な音響特性を示し、声質や母音分布の傾向  
@@ -433,3 +416,5 @@ if wav_audio:
 ※ 青＝MFCC平均  オレンジ＝MFCC変動（同一グラフ内に重ねて表示）
 """)
 
+
+-
