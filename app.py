@@ -298,7 +298,7 @@ def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flat
 
 # ✅ 音声ファイルが存在するか確認
 if wav_audio is not None and len(wav_audio) > 0:
-    st.header("✂️ 範囲指定して分析")
+    st.header("↔️ 範囲指定して分析")
     st.markdown("#### 🧭 区間選択スライダー（開始位置を指定）")
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_wav:
