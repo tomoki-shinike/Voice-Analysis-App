@@ -277,8 +277,7 @@ if file_a and file_b:
 - **Amplitude**：生波形の振幅（瞬間的な変動）
 """)
 
-# ===== 区間分析セクション =====
-st.header("✂️ 範囲指定して分析")
+# ===== 区間分析セクション（音声ありの場合のみ表示） =====
 
 def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean):
     feedback = []
@@ -297,7 +296,9 @@ def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flat
         feedback.append("ハーモニック成分が少なく、ノイズ的な傾向が強いです。")
     return "📝 音響フィードバック:\n" + "\n".join(f"- {line}" for line in feedback) if feedback else "音響指標に大きな異常は見られません。"
 
-if wav_audio:
+# ✅ 音声ファイルが存在するか確認
+if wav_audio is not None and len(wav_audio) > 0:
+    st.header("✂️ 範囲指定して分析")
     st.markdown("#### 🧭 区間選択スライダー（開始位置を指定）")
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_wav:
@@ -341,7 +342,6 @@ if wav_audio:
             ax[1].set_xlabel("Time（s）")
             st.pyplot(fig)
 
-            # ===== 拡張音響特徴の抽出（15秒区間） =====
             st.subheader("🧪 拡張音響指標")
 
             mfcc = librosa.feature.mfcc(y=y_seg, sr=sr_full, n_mfcc=13)
