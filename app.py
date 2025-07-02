@@ -1,10 +1,7 @@
-# app.py (第1部)
-
 import streamlit as st
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
-from pydub import AudioSegment
 import whisper
 import tempfile
 import soundfile as sf
@@ -14,14 +11,13 @@ st.set_page_config(page_title="音声分析アプリ", layout="wide")
 st.title("🗣️ 録音＆音声分析アプリ（Whisper対応）")
 
 # ===== 共通関数 =====
+
+# 🔄 アップロードファイルを WAV として保存（pydub不要）
 def convert_to_wav(uploaded_file):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".input") as tmp_in:
-        tmp_in.write(uploaded_file.read())
-        tmp_in.flush()
-        audio = AudioSegment.from_file(tmp_in.name)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_out:
-            audio.export(tmp_out.name, format="wav")
-            return tmp_out.name, audio
+    tmp_path = tempfile.NamedTemporaryFile(delete=False, suffix=".wav").name
+    with open(tmp_path, "wb") as f:
+        f.write(uploaded_file.read())
+    return tmp_path  # pydubではなく単純保存
 
 def analyze_features(y, sr):
     duration = librosa.get_duration(y=y, sr=sr)
@@ -60,28 +56,21 @@ def generate_feedback(feat):
     return " ".join(fb)
 
 # ================= 録音＆Whisper解析 =================
-from audio_recorder_streamlit import audio_recorder
 
 st.header("🎤 マイク録音＆文字起こし（改善版UI）")
-
-# 録音ボタン表示
 st.markdown("##### 🎙 録音開始ボタンを押して話してください")
 
-# 録音セッション開始
 wav_audio = audio_recorder(pause_threshold=8.0, sample_rate=16000)
 
-# 🎛 状態表示（録音中／完了）
 if wav_audio is None:
     st.info("🟢 マイク待機中... 録音を開始してください")
 else:
     st.success("🔴 録音完了！以下から再生・保存・分析できます")
 
-# 🔁 音声が録音されたら、再生＋保存＋分析ボタン
 if wav_audio:
     st.audio(wav_audio, format="audio/wav")
     st.download_button("⬇️ ここから録音を保存できます", wav_audio, file_name="recorded.wav")
 
-    # 📊 音響指標分析（Whisperとは独立）
     if st.button("📊 録音音声を音響的に分析する"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
             tmp_audio.write(wav_audio)
@@ -105,7 +94,6 @@ if wav_audio:
         ax[1].set_xlabel("Time（s）")
         st.pyplot(fig_rec)
 
-    # 🔍 Whisper解析ボタン（任意実行）
     if st.button("🔍 Whisper文字起こしを実行する"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
             tmp.write(wav_audio)
@@ -113,7 +101,7 @@ if wav_audio:
             y, sr = librosa.load(tmp.name, sr=None)
 
         with st.spinner("Whisperで文字起こし中..."):
-            model = whisper.load_model("medium")
+            model = whisper.load_model("small")  # Cloud向けに軽量モデル推奨
             result = model.transcribe(tmp.name, language="ja")
 
         st.subheader("📝 Whisper文字起こし")
@@ -171,10 +159,10 @@ if wav_audio:
 # ========== 単体音声ファイルの分析 ==========
 st.header("📂 アップロード音声の分析")
 
-uploaded_file = st.file_uploader("音声ファイルをアップロード（WAV, MP3, M4A）", type=["wav", "mp3", "m4a"])
+uploaded_file = st.file_uploader("音声ファイルをアップロード（WAV推奨）", type=["wav"])
 if uploaded_file:
     st.audio(uploaded_file)
-    path, audio = convert_to_wav(uploaded_file)
+    path = convert_to_wav(uploaded_file)
     y, sr = librosa.load(path, sr=None)
     feat = analyze_features(y, sr)
 
@@ -225,14 +213,14 @@ def compare_feedback(fa, fb):
     return " ".join(msg)
 
 col1, col2 = st.columns(2)
-file_a = col1.file_uploader("音声A", type=["wav", "mp3", "m4a"], key="compare_a")
-file_b = col2.file_uploader("音声B", type=["wav", "mp3", "m4a"], key="compare_b")
+file_a = col1.file_uploader("音声A", type=["wav"], key="compare_a")
+file_b = col2.file_uploader("音声B", type=["wav"], key="compare_b")
 
 if file_a and file_b:
     st.audio(file_a)
     st.audio(file_b)
-    path_a, _ = convert_to_wav(file_a)
-    path_b, _ = convert_to_wav(file_b)
+    path_a = convert_to_wav(file_a)
+    path_b = convert_to_wav(file_b)
     ya, sr_a = librosa.load(path_a, sr=None)
     yb, sr_b = librosa.load(path_b, sr=None)
     fa = analyze_features(ya, sr_a)
@@ -249,7 +237,6 @@ if file_a and file_b:
     st.subheader("📈 時系列グラフ：音量 / ピッチ / 明瞭度 / 振幅")
     fig, axes = plt.subplots(4, 1, figsize=(10, 8), sharex=False)
 
-    # 時間軸
     t_rms_a = librosa.times_like(fa["rms"], sr=sr_a)
     t_rms_b = librosa.times_like(fb["rms"], sr=sr_b)
     t_pitch_a = librosa.times_like(fa["pitch"], sr=sr_a)
@@ -259,25 +246,21 @@ if file_a and file_b:
     t_amp_a = np.linspace(0, len(ya) / sr_a, len(ya))
     t_amp_b = np.linspace(0, len(yb) / sr_b, len(yb))
 
-    # グラフ1：音量
     axes[0].plot(t_rms_a, fa["rms"], label="A", color="blue")
     axes[0].plot(t_rms_b, fb["rms"], label="B", color="orange", linestyle="--")
     axes[0].set_ylabel("RMS (Volume)")
     axes[0].legend()
 
-    # グラフ2：ピッチ
     axes[1].plot(t_pitch_a, fa["pitch"], label="A", color="blue")
     axes[1].plot(t_pitch_b, fb["pitch"], label="B", color="orange", linestyle="--")
     axes[1].set_ylabel("Pitch (Hz)")
     axes[1].legend()
 
-    # グラフ3：明瞭度
     axes[2].plot(t_flat_a, fa["clarity"], label="A", color="blue")
     axes[2].plot(t_flat_b, fb["clarity"], label="B", color="orange", linestyle="--")
     axes[2].set_ylabel("Spectral Flatness")
     axes[2].legend()
 
-    # グラフ4：振幅
     axes[3].plot(t_amp_a, ya, label="A", alpha=0.6, color="blue")
     axes[3].plot(t_amp_b, yb, label="B", alpha=0.6, color="orange")
     axes[3].set_ylabel("Amplitude")
@@ -289,11 +272,11 @@ if file_a and file_b:
     st.markdown("""
 **🧾 グラフのラベル説明：**
 
-- **RMS (Volume)**：音量（振幅の平均強度）
-- **Pitch (Hz)**：基本周波数（声の高さ）
-- **Spectral Flatness**：明瞭度の指標（ノイズ的かどうか）
-- **Amplitude**：生波形の振幅（瞬間的な変動）""")
-
+- **RMS (Volume)**：音量（振幅の平均強度）  
+- **Pitch (Hz)**：基本周波数（声の高さ）  
+- **Spectral Flatness**：明瞭度の指標（ノイズ的かどうか）  
+- **Amplitude**：生波形の振幅（瞬間的な変動）
+""")
 
 # ===== 区間分析セクション =====
 st.header("✂️ 録音の一部を15秒間の範囲で分析")
@@ -422,30 +405,4 @@ if wav_audio:
                 fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
                 ax.plot(angles, mean_vals, color="blue", linewidth=2, label="Mean")
                 ax.fill(angles, mean_vals, color="blue", alpha=0.25)
-                ax.plot(angles, std_vals, color="orange", linewidth=2)
-
-
-# MFCCレーダーチャート（続き）
-                ax.plot(angles, std_vals, color="orange", linewidth=2, label="Variation")
-                ax.fill(angles, std_vals, color="orange", alpha=0.25)
-                ax.set_thetagrids(np.degrees(angles[:-1]), labels)
-                ax.set_title("MFCC Mean & Variation (Normalized)")
-                ax.grid(True)
-                ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.2))
-                st.pyplot(fig)
-
-            mfcc_mean_norm = (mfcc_mean - np.min(mfcc_mean)) / (np.max(mfcc_mean) - np.min(mfcc_mean) + 1e-6)
-            mfcc_std_norm = (mfcc_std - np.min(mfcc_std)) / (np.max(mfcc_std) - np.min(mfcc_std) + 1e-6)
-
-            plot_combined_radar(mfcc_mean_norm.tolist(), mfcc_std_norm.tolist())
-
-            # 日本語による補足解説
-            st.markdown("""
-**🧾 MFCCラベルの説明**
-
-- **MFCC1〜13** は音声スペクトルの形状を要約した特徴量です  
-- **MFCC Mean** は平均的な音響特性を示し、声質や母音分布の傾向  
-- **MFCC Variation** は音響の変動性（声の揺らぎや多様性）を示します  
-
-※ 青＝MFCC平均  オレンジ＝MFCC変動（同一グラフ内に重ねて表示）
-""")
+                ax.plot(angles, std_vals, color="
