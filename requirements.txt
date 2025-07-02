@@ -8,3 +8,4 @@ torch
 whisper
 audio-recorder-streamlit
 typing_extensions
+git+https://github.com/openai/whisper.git
