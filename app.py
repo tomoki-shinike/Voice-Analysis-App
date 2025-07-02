@@ -7,8 +7,8 @@ import tempfile
 import soundfile as sf
 from audio_recorder_streamlit import audio_recorder
 
-st.set_page_config(page_title="－音声アプリ－", layout="wide")
-st.title("🗣️ 音声分析アプリ")
+st.set_page_config(page_title="－音声分析アプリ－", layout="wide")
+st.markdown("## 🗣️ 音声分析アプリ") 
 
 # ===== 共通関数 =====
 
@@ -59,8 +59,8 @@ def generate_feedback(feat):
 
 # ================= 録音＆Whisper解析 =================
 
-st.header("🎤 録音＆文字起こし")
-st.markdown("##### 🎙 マイクを押して録音開始・停止を操作します")
+st.header("🎙️ 録音＆文字起こし")
+st.markdown("##### ↓↓を押して開始・停止を操作します")
 
 wav_audio = audio_recorder(pause_threshold=8.0, sample_rate=16000)
 
