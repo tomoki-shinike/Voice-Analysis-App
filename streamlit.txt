@@ -4,3 +4,7 @@ numpy
 matplotlib
 whisper
 audio-recorder-streamlit
+scipy
+soundfile
+torch
+typing_extensions
