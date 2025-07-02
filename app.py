@@ -8,7 +8,7 @@ import soundfile as sf
 from audio_recorder_streamlit import audio_recorder
 
 st.set_page_config(page_title="－音声分析アプリ－", layout="wide")
-st.markdown("## 🗣️ 音声分析アプリ") 
+st.markdown("# 🗣️ 音声分析アプリ") 
 
 # ===== 共通関数 =====
 
@@ -423,7 +423,7 @@ with st.expander("🧾 数値の解釈を表示"):
 
 ---
 
-### 🔊 平均音量（RMS） — *(Root Mean Square)*  
+### 🔊 平均音量（RMS）
 - **目安と範囲**：<span style='color:red;'>-25～-15 dBFS</span> が自然な会話音量  
 - **解釈**：-30 dBFS 以下は非常に小さく聞こえ、-10 dBFS 以上は歪みの可能性も  
 - **参考**：[OTO-to-MIMI：RMSと音圧](https://oto-to-mimi.com/mixing/about-peak-and-rms/)  
@@ -461,7 +461,7 @@ with st.expander("🧾 数値の解釈を表示"):
 
 ---
 
-### 🎙 フォルマント周波数（F1, F2, F3） — *(Formants)*  
+### 🎙 フォルマント周波数（F1, F2, F3）
 - **目安と範囲**：<span style='color:red;'>F1：300～900 Hz F2：900～2500 Hz</span>（母音によって変化）  
 - **解釈**：F1＝口の開き F2＝舌の前後位置に関係し、母音の特徴を形成  
 - **参考**：[東京外大：母音フォルマント分析](https://tufs.repo.nii.ac.jp/record/6449/files/acs082006_ful.pdf)  
