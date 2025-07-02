@@ -379,7 +379,7 @@ if wav_audio is not None and len(wav_audio) > 0:
             st.markdown(f"- **スペクトル傾斜**：{slope:.2f} dB/oct")
             st.markdown(f"- **スペクトル平坦度**：{flatness_mean:.3f}")
 
-            st.markdown("#### 🗒 自然言語による音響フィードバック")
+            st.markdown("#### 🗒 音響のフィードバック")
             st.info(generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean))
 
             st.markdown("##### MFCC Mean & Variation Radar Chart")
