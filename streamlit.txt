@@ -2,9 +2,9 @@ streamlit
 librosa
 numpy
 matplotlib
-whisper
-audio-recorder-streamlit
 scipy
 soundfile
+whisper
+audio-recorder-streamlit
 torch
 typing_extensions
