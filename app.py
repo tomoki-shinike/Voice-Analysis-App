@@ -167,7 +167,7 @@ if wav_audio:
 
 
 # ========== 単体音声ファイルの分析 ==========
-st.header("📂 アップロード音声の分析")
+st.header("📂 音声を選択して分析")
 
 uploaded_file = st.file_uploader("音声ファイルをアップロード（WAV推奨）", type=["wav"])
 if uploaded_file:
@@ -192,7 +192,7 @@ if uploaded_file:
     st.pyplot(fig)
 
 # ========== 音声A/B 比較分析 ==========
-st.header("📂 音声AとBの比較分析")
+st.header("📂 音声の比較分析")
 
 def compare_features(fa, fb):
     def pct(a, b):
@@ -288,7 +288,7 @@ if file_a and file_b:
 """)
 
 # ===== 区間分析セクション =====
-st.header("✂️ 範囲を指定して分析")
+st.header("✂️ 範囲指定して分析")
 
 def generate_natural_feedback(f1, f2, centroid_mean, bandwidth_mean, slope, flatness_mean):
     feedback = []
