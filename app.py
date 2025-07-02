@@ -405,4 +405,31 @@ if wav_audio:
                 fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
                 ax.plot(angles, mean_vals, color="blue", linewidth=2, label="Mean")
                 ax.fill(angles, mean_vals, color="blue", alpha=0.25)
-                ax.plot(angles, std_vals, color="
+                ax.plot(angles, std_vals, color="orange", linewidth=2)
+
+
+# MFCCレーダーチャート（続き）
+                ax.plot(angles, std_vals, color="orange", linewidth=2, label="Variation")
+                ax.fill(angles, std_vals, color="orange", alpha=0.25)
+                ax.set_thetagrids(np.degrees(angles[:-1]), labels)
+                ax.set_title("MFCC Mean & Variation (Normalized)")
+                ax.grid(True)
+                ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.2))
+                st.pyplot(fig)
+
+            mfcc_mean_norm = (mfcc_mean - np.min(mfcc_mean)) / (np.max(mfcc_mean) - np.min(mfcc_mean) + 1e-6)
+            mfcc_std_norm = (mfcc_std - np.min(mfcc_std)) / (np.max(mfcc_std) - np.min(mfcc_std) + 1e-6)
+
+            plot_combined_radar(mfcc_mean_norm.tolist(), mfcc_std_norm.tolist())
+
+            # 日本語による補足解説
+            st.markdown("""
+**🧾 MFCCラベルの説明**
+
+- **MFCC1〜13** は音声スペクトルの形状を要約した特徴量です  
+- **MFCC Mean** は平均的な音響特性を示し、声質や母音分布の傾向  
+- **MFCC Variation** は音響の変動性（声の揺らぎや多様性）を示します  
+
+※ 青＝MFCC平均  オレンジ＝MFCC変動（同一グラフ内に重ねて表示）
+""")
+
